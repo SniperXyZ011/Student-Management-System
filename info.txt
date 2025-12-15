@@ -1,0 +1,9 @@
+This is a student mangement system, which will have all the necessary api points for a working SMS for a school or university
+Learning outcome : 1.  We will learn about how to create api's in Go
+                   2.  We will learn to build a CRUD backend which will form our basics of GO in creating a backend
+
+
+
+So what are the steps one should remember while starting a project 
+1. Create a module with cmd : go mod init <yha par put your github.com/id/project> (ye convetion hai)
+2. remember the folder structure cmd [folder] -> <project-name>[folder] -> main.go (entry point)
