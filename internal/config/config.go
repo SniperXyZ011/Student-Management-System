@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -16,7 +17,7 @@ import (
 
 
 type HttpServer struct {
-	Addr string
+	Addr string `yaml:"address" env:"address" env-required:"true"`
 }
 
 // env-default:"production"
@@ -32,7 +33,6 @@ type Config struct { //ye struct hum, jo humne base direc mai config ke andar lo
 
 func MustLoad() *Config{
 	var configPath string
-
 	configPath = os.Getenv("CONFIG_PATH")
 
 	if configPath == "" {
