@@ -78,3 +78,37 @@ func (s *Sql) GetStudentById(id int64) (types.Student, error) {
 
 	return  student, nil
 }
+
+func (s *Sql) GetStudents() ([]types.Student, error) {
+	stmt, err := s.Db.Prepare("SELECT id, name, email, age FROM students")
+
+	if err != nil {
+		return []types.Student{}, err
+	}
+
+	defer stmt.Close()
+
+	var students []types.Student
+	rows, err := stmt.Query()
+	
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return  nil, fmt.Errorf("No students found")
+		}
+		return nil, fmt.Errorf("Query error: %s", err)
+	}	
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var student types.Student
+		err := rows.Scan(&student.Id, &student.Name, &student.Email, &student.Age)
+		if err != nil {
+			return nil, err
+		}
+
+		students = append(students, student)
+	}
+
+	return students, nil
+}
