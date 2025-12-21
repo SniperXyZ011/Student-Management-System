@@ -71,7 +71,7 @@ func (s *Sql) GetStudentById(id int64) (types.Student, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return  types.Student{}, fmt.Errorf("No students found with %d", id)
+			return  types.Student{}, err
 		}
 		return types.Student{}, fmt.Errorf("Query error: %s", err)
 	}
@@ -111,4 +111,88 @@ func (s *Sql) GetStudents() ([]types.Student, error) {
 	}
 
 	return students, nil
+}
+
+func (s *Sql) DeleteStudent(id int64) (string, error) {
+	stmt, err := s.Db.Prepare("DELETE FROM students WHERE id = ?")
+
+	if err != nil {
+		return "", err
+	}
+
+	defer stmt.Close()
+
+	res, err := stmt.Exec(id)
+
+	if err != nil {
+		return "", err
+	}	
+	rowsAffected, err := res.RowsAffected()
+
+	if err != nil {
+		return "", err
+	}
+
+	if rowsAffected == 0 {
+		return "", fmt.Errorf("no student found with id %d", id)
+	}
+
+	return "Deleted successfully", nil
+}
+
+func (s *Sql) EditStudent(student types.Student) (types.Student, error) {
+	id := student.Id
+	name := student.Name
+	email := student.Email
+	age := student.Age
+
+	//we will first get the data of this id
+	stmt, err := s.Db.Prepare("SELECT name, email, age FROM students WHERE id = ?")
+	if err != nil {
+		return types.Student{}, err
+	}
+
+	defer stmt.Close()
+
+	var student_query types.Student
+	err = stmt.QueryRow(id).Scan(&student_query.Name, &student_query.Email, &student_query.Age)
+
+	if err != nil {
+		return types.Student{}, err
+	}
+
+	if(name == ""){
+		name = student_query.Name
+	}
+	if(email == ""){
+		email = student_query.Email
+	}
+	if(age == 0){
+		age = student_query.Age
+	}
+
+	updateStmt, err := s.Db.Prepare("UPDATE students SET name = ?, email = ?, age = ? WHERE id= ?")
+	if err != nil {
+		return types.Student{}, err
+	}
+
+	defer stmt.Close()
+
+	res, err := updateStmt.Exec(name, email, age, id)
+
+	if err != nil {
+		return types.Student{}, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if rowsAffected == 0 {
+		return types.Student{}, fmt.Errorf("no student found with id %d", id)
+	}
+
+	return types.Student{
+		Id: id,
+		Name: name,
+		Email: email,
+		Age: age,
+	}, nil
 }

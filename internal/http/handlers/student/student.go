@@ -1,6 +1,7 @@
 package student
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/SniperXyZ011/Student-Management-System/internal/storage"
 	"github.com/SniperXyZ011/Student-Management-System/internal/types"
@@ -69,6 +71,11 @@ func GetById(storage storage.Storage) http.HandlerFunc {
 		}
 		student, err := storage.GetStudentById(intId)
 
+		if err == sql.ErrNoRows {
+			response.WriteJson(w, http.StatusNotFound, response.GeneralError(err))
+			return 
+		}
+		
 		if err != nil {
 			slog.Error("Error getting user", slog.String("Id", id))
 			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
@@ -90,5 +97,63 @@ func GetList(storage storage.Storage) http.HandlerFunc {
 		}
 
 		response.WriteJson(w, http.StatusOK, students)
+	}
+}
+
+func DeleteById(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		slog.Info("Deleting a student", slog.String("id", id))
+		intId, err := strconv.ParseInt(id, 10, 64)
+		
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, err)
+			return 
+		}
+
+		res, err := storage.DeleteStudent(intId)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "no student found") {
+				response.WriteJson(w, http.StatusNotFound, response.GeneralError(err))
+				return 
+			}
+			response.WriteJson(w, http.StatusInternalServerError, err)
+		}
+		
+		response.WriteJson(w, http.StatusOK, map[string]string {"res" : res})
+	}
+}
+
+func EditById(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		intId, err := strconv.ParseInt(id, 10, 64)
+
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return 
+		}
+
+		var student types.Student
+		err = json.NewDecoder(r.Body).Decode(&student)
+
+		if err == io.EOF {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("empty body")))
+			return 
+		}
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return 
+		}
+		student.Id = intId
+		student, err = storage.EditStudent(student)
+
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return 
+		}
+
+		response.WriteJson(w, http.StatusOK, student)
 	}
 }
