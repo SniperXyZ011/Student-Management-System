@@ -1,4 +1,4 @@
-env : "dev"
-storage_path : "root:201104@tcp(localhost:3306)/students" 
-http_server :
-  address : "localhost:8080"
+env: "dev"
+storage_path: "root:201104@tcp(localhost:3306)/students"
+http_server:
+  address: "localhost:8080"

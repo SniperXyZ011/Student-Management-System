@@ -55,7 +55,7 @@ func (s *Sql) CreateStudent(name string, email string, age int) (int64, error) {
 	}
 
 	return lastId, nil
-}	
+}
 
 func (s *Sql) GetStudentById(id int64) (types.Student, error) {
 	stmt, err := s.Db.Prepare("SELECT id, name, email, age FROM students WHERE id = ? LIMIT 1")
@@ -71,12 +71,12 @@ func (s *Sql) GetStudentById(id int64) (types.Student, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return  types.Student{}, err
+			return types.Student{}, err
 		}
 		return types.Student{}, fmt.Errorf("Query error: %s", err)
 	}
 
-	return  student, nil
+	return student, nil
 }
 
 func (s *Sql) GetStudents() ([]types.Student, error) {
@@ -90,13 +90,13 @@ func (s *Sql) GetStudents() ([]types.Student, error) {
 
 	var students []types.Student
 	rows, err := stmt.Query()
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return  nil, fmt.Errorf("No students found")
+			return nil, fmt.Errorf("No students found")
 		}
 		return nil, fmt.Errorf("Query error: %s", err)
-	}	
+	}
 
 	defer rows.Close()
 
@@ -126,7 +126,7 @@ func (s *Sql) DeleteStudent(id int64) (string, error) {
 
 	if err != nil {
 		return "", err
-	}	
+	}
 	rowsAffected, err := res.RowsAffected()
 
 	if err != nil {
@@ -161,13 +161,13 @@ func (s *Sql) EditStudent(student types.Student) (types.Student, error) {
 		return types.Student{}, err
 	}
 
-	if(name == ""){
+	if name == "" {
 		name = student_query.Name
 	}
-	if(email == ""){
+	if email == "" {
 		email = student_query.Email
 	}
-	if(age == 0){
+	if age == 0 {
 		age = student_query.Age
 	}
 
@@ -190,9 +190,9 @@ func (s *Sql) EditStudent(student types.Student) (types.Student, error) {
 	}
 
 	return types.Student{
-		Id: id,
-		Name: name,
+		Id:    id,
+		Name:  name,
 		Email: email,
-		Age: age,
+		Age:   age,
 	}, nil
 }

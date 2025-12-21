@@ -15,7 +15,6 @@ import (
 //then humne vo clean env go wali repo ko install kiya then uska use krke struct annotation create ki jo `...` aise likha hua hai
 //finally hum ek mustload func likh rhe hai jo ki hamare server start hote time make sure krega ki saari config acche se load hui ya nh
 
-
 type HttpServer struct {
 	Addr string `yaml:"address" env:"address" env-required:"true"`
 }
@@ -23,15 +22,13 @@ type HttpServer struct {
 // env-default:"production"
 type Config struct { //ye struct hum, jo humne base direc mai config ke andar local.yaml mai likha tha uss basis par ban rhe hai
 	Env         string `yaml:"env" env:"ENV" env-required:"true"` //struct tags
-	StoragePath string `yaml:"storage_path" env-required:"true"` //these annotations ko hum vo "go clean env" wali repo se use kr paa rhe hai
+	StoragePath string `yaml:"storage_path" env-required:"true"`  //these annotations ko hum vo "go clean env" wali repo se use kr paa rhe hai
 	HttpServer  `yaml:"http_server"`
 }
 
-
-
 //about mustload func : sbse phle hum configPath get krke ki kosis kr rhe hai using os.Getenv method, agr isse nh mil rha then hum jab app hote time usually jo flags ke saath keys and paths daalte hai uske through parse krne ki kosish kr rhe hai, aur agr hume dono cases se bhi path nh mila tab hum fatal error degai since then aage nh badh skte
 
-func MustLoad() *Config{
+func MustLoad() *Config {
 	var configPath string
 	configPath = os.Getenv("CONFIG_PATH")
 
@@ -55,6 +52,6 @@ func MustLoad() *Config{
 	if err != nil {
 		log.Fatalf("Can't read config file %s", err.Error())
 	}
-	
+
 	return &cfg
 }

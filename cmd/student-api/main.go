@@ -23,7 +23,7 @@ func main() {
 	//database setup
 	// storage, err := sqlite.New(cfg)
 	storage, err := sql.New(cfg)
-	
+
 	if err != nil {
 		log.Fatal(err)
 	}

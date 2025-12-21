@@ -67,19 +67,19 @@ func GetById(storage storage.Storage) http.HandlerFunc {
 
 		if err != nil {
 			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
-			return 
+			return
 		}
 		student, err := storage.GetStudentById(intId)
 
 		if err == sql.ErrNoRows {
 			response.WriteJson(w, http.StatusNotFound, response.GeneralError(err))
-			return 
+			return
 		}
-		
+
 		if err != nil {
 			slog.Error("Error getting user", slog.String("Id", id))
 			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
-			return 
+			return
 		}
 
 		response.WriteJson(w, http.StatusOK, student)
@@ -91,9 +91,9 @@ func GetList(storage storage.Storage) http.HandlerFunc {
 		slog.Info("Getting all the students")
 		students, err := storage.GetStudents()
 
-		if err != nil{
+		if err != nil {
 			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
-			return 
+			return
 		}
 
 		response.WriteJson(w, http.StatusOK, students)
@@ -105,10 +105,10 @@ func DeleteById(storage storage.Storage) http.HandlerFunc {
 		id := r.PathValue("id")
 		slog.Info("Deleting a student", slog.String("id", id))
 		intId, err := strconv.ParseInt(id, 10, 64)
-		
+
 		if err != nil {
 			response.WriteJson(w, http.StatusBadRequest, err)
-			return 
+			return
 		}
 
 		res, err := storage.DeleteStudent(intId)
@@ -116,12 +116,12 @@ func DeleteById(storage storage.Storage) http.HandlerFunc {
 		if err != nil {
 			if strings.Contains(err.Error(), "no student found") {
 				response.WriteJson(w, http.StatusNotFound, response.GeneralError(err))
-				return 
+				return
 			}
 			response.WriteJson(w, http.StatusInternalServerError, err)
 		}
-		
-		response.WriteJson(w, http.StatusOK, map[string]string {"res" : res})
+
+		response.WriteJson(w, http.StatusOK, map[string]string{"res": res})
 	}
 }
 
@@ -132,7 +132,7 @@ func EditById(storage storage.Storage) http.HandlerFunc {
 
 		if err != nil {
 			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
-			return 
+			return
 		}
 
 		var student types.Student
@@ -140,18 +140,18 @@ func EditById(storage storage.Storage) http.HandlerFunc {
 
 		if err == io.EOF {
 			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("empty body")))
-			return 
+			return
 		}
 		if err != nil {
 			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
-			return 
+			return
 		}
 		student.Id = intId
 		student, err = storage.EditStudent(student)
 
 		if err != nil {
 			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
-			return 
+			return
 		}
 
 		response.WriteJson(w, http.StatusOK, student)
