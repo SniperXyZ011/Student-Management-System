@@ -7,13 +7,15 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strconv"
 
+	"github.com/SniperXyZ011/Student-Management-System/internal/storage"
 	"github.com/SniperXyZ011/Student-Management-System/internal/types"
 	"github.com/SniperXyZ011/Student-Management-System/internal/utils/response"
 	"github.com/go-playground/validator/v10"
 )
 
-func New() http.HandlerFunc {
+func New(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var student types.Student //using this to seralize the data
 
@@ -38,7 +40,41 @@ func New() http.HandlerFunc {
 		}
 
 		slog.Info("Creating a new student")
+		lastId, err := storage.CreateStudent(
+			student.Name,
+			student.Email,
+			student.Age,
+		)
 
-		response.WriteJson(w, http.StatusCreated, map[string]string{"Success": "OK"})
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, err)
+		}
+
+		slog.Info("User created successfully", slog.String("UserId", fmt.Sprint(lastId)))
+
+		response.WriteJson(w, http.StatusCreated, map[string]int64{"id": lastId})
+	}
+}
+
+func GetById(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		slog.Info("Getting a student", slog.String("id", id))
+
+		intId, err := strconv.ParseInt(id, 10, 64)
+
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return 
+		}
+		student, err := storage.GetStudentById(intId)
+
+		if err != nil {
+			slog.Error("Error getting user", slog.String("Id", id))
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return 
+		}
+
+		response.WriteJson(w, http.StatusOK, student)
 	}
 }

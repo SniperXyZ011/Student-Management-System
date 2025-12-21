@@ -12,6 +12,8 @@ import (
 
 	"github.com/SniperXyZ011/Student-Management-System/internal/config"
 	"github.com/SniperXyZ011/Student-Management-System/internal/http/handlers/student"
+	"github.com/SniperXyZ011/Student-Management-System/internal/storage/sql"
+	// "github.com/SniperXyZ011/Student-Management-System/internal/storage/sqlite"
 )
 
 func main() {
@@ -19,10 +21,20 @@ func main() {
 	cfg := config.MustLoad()
 
 	//database setup
+	// storage, err := sqlite.New(cfg)
+	storage, err := sql.New(cfg)
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	slog.Info("Storage initilized", slog.String("env", cfg.Env), slog.String("version", "1.0.0"))
+
 	//setup router
 	router := http.NewServeMux()
 
-	router.HandleFunc("POST /api/students", student.New())
+	router.HandleFunc("POST /api/students", student.New(storage))
+	router.HandleFunc("GET /api/students/{id}", student.GetById(storage))
 
 	//setup server
 	server := http.Server{
@@ -57,7 +69,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) //agr server infinte loop mai fas jaye terminate hote time and 5sec se jada time lag jayge to fir ye error ctx bejh dega and uss situation ko acche se handle kr lega
 	defer cancel()
 
-	err := server.Shutdown(ctx)
+	err = server.Shutdown(ctx)
 	if err != nil {
 		slog.Error("Failed to shutdown the server", slog.String("error", err.Error()))
 	}
